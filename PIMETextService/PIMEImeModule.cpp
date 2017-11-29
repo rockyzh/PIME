@@ -48,6 +48,10 @@ ImeModule::ImeModule(HMODULE module):
 		programDir_ = path;
 		programDir_ += L"\\PIME";
 
+#ifdef DEBUG
+		programDir_ = L"G:\\TibetanIME\\TibetanIME";
+#endif
+
 		// load backend information
 		std::ifstream fp(programDir_ + L"\\backends.json", std::ifstream::binary);
 		if (fp) {

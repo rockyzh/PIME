@@ -1,0 +1,14 @@
+{
+    "name":"阳光藏文输入法",
+    "version": "1.00",
+    "guid": "{BFC0F672-A4A9-48CA-9DF7-920BBA291ADF}",
+    "locale": "bo-CN",
+    "fallbackLocale": "bo-CN",
+    "icon": "icon.ico",
+    "win8_icon": "",
+    "moduleName": "tibetan_ime",
+    "serviceName": "TibetanTextService",
+    "configTool": "..\\..\\python3\\pythonw.exe",
+    "configToolParams": "configtool.py config tibetan",
+    "configToolDir": "..\\..\\tinbase"
+}

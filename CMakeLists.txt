@@ -44,10 +44,10 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/jsoncpp)
 add_subdirectory(${PROJECT_SOURCE_DIR}/PIMETextService)
 
 # only build the following components for 32-bit x86 platform
-if("${CMAKE_SIZEOF_VOID_P}" EQUAL "4")
+#if("${CMAKE_SIZEOF_VOID_P}" EQUAL "4")
 
     # build our own forked version of libuv (used by PIMELauncher)
     add_subdirectory(${PROJECT_SOURCE_DIR}/libuv)
 
     add_subdirectory(${PROJECT_SOURCE_DIR}/PIMELauncher)
-endif("${CMAKE_SIZEOF_VOID_P}" EQUAL "4")
+#endif("${CMAKE_SIZEOF_VOID_P}" EQUAL "4")
