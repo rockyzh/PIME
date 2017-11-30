@@ -37,7 +37,7 @@ class TibetanTextService(TextService):
         TextService.onActivate(self)
         self.tibetanKeymap = TibetKeyMap()
         self.imdict = IMDict()
-        self.customizeUI(candFontSize = 20, candPerRow = 1)
+        self.customizeUI(candFontSize=20, candPerRow=1)
         self.setSelKeys("1234567890")
         # self.setSelKeys("asdfjkl;")
 
