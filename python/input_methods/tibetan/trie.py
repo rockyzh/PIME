@@ -87,7 +87,7 @@ class Trie:
 
         # Get words under prefix
         if top_node == self.head:
-            queue = [node for key, node in top_node.children.iteritems()]
+            queue = [node for key, node in top_node.children.items()]
         else:
             queue = [top_node]
 
@@ -100,7 +100,7 @@ class Trie:
                 # Isn't it nice to not have to go back up the tree?
                 words.append(current_node.data)
 
-            queue = [node for key,node in current_node.children.iteritems()] + queue
+            queue = [node for key,node in current_node.children.items()] + queue
 
         return words
 

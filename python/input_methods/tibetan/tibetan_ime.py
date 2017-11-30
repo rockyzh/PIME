@@ -19,12 +19,6 @@ import io
 import os.path
 import copy
 
-from cinbase import CinBase
-from cinbase import LoadCinTable
-from cinbase import LoadRCinTable
-from cinbase import LoadHCinTable
-from cinbase.config import CinBaseConfig
-
 from .trie import *
 
 class TibetanTextService(TextService):
@@ -32,7 +26,9 @@ class TibetanTextService(TextService):
     compositionChar = ''
     tibetanKeymap = None
     imdict = None
-    
+    candidates = []
+    mState = None
+
     def __init__(self, client):
         TextService.__init__(self, client)
         self.icon_dir = os.path.abspath(os.path.dirname(__file__))
@@ -50,64 +46,72 @@ class TibetanTextService(TextService):
 
     def filterKeyDown(self, keyEvent):
         if not self.isComposing():
-            if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == VK_BACK:
+            if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == VK_BACK or not keyEvent.isChar():
                 return False
         return True
 
     def onKeyDown(self, keyEvent):
+        print("keydown:", keyEvent.__dict__)
+        print("showCandidates:", self.showCandidates)
+        print("compositionString", self.compositionString)
+
         # handle candidate list
         if self.showCandidates:
-            print("showCandidates:",self.showCandidates)
-
-            if keyEvent.keyCode == VK_UP or keyEvent.keyCode == VK_ESCAPE:
+            if keyEvent.keyCode == VK_ESCAPE:
                 self.setShowCandidates(False)
-            elif keyEvent.keyCode >= ord('1') and keyEvent.keyCode <= ord('4'):
+            elif keyEvent.keyCode >= ord('1') and keyEvent.keyCode <= ord('9'):
                 i = keyEvent.keyCode - ord('1')
-                cand = candidates[i]
-                i = self.compositionCursor - 1
-                if i < 0:
-                    i = 0
-                s = self.compositionString[0:i] + cand + self.compositionString[i + 1:]
-                self.setCompositionString(s)
+                if i >= len(self.candidates):
+                    return false
+
+                self.setCommitString(self.candidates[i])
+                self.setCompositionString("")
                 self.setShowCandidates(False)
-            return True
-        else:
-            if keyEvent.keyCode == VK_DOWN:
-                self.setCandidateList(candidates)
-                self.setShowCandidates(True)
                 return True
+
         # handle normal keyboard input
         if not self.isComposing():
             if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == VK_BACK:
                 return False
-        if keyEvent.keyCode == VK_RETURN or len(self.compositionString) > 10:
+        if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == ord(' '):
             self.setCommitString(self.compositionString)
             self.setCompositionString("")
+            self.setShowCandidates(False)
+            return True
         elif keyEvent.keyCode == VK_BACK and self.compositionString != "":
             self.setCompositionString(self.compositionString[:-1])
-        elif keyEvent.keyCode == VK_LEFT:
-            i = self.compositionCursor - 1
-            if i >= 0:
-                self.setCompositionCursor(i)
-        elif keyEvent.keyCode == VK_RIGHT:
-            i = self.compositionCursor + 1
-            if i <= len(self.compositionString):
-                self.setCompositionCursor(i)
+        elif not keyEvent.isChar():
+            return True
         else:
-            ret = self.tibetanKeymap.getKey(keyEvent.charCode)
+            ret = self.tibetanKeymap.getKey(chr(keyEvent.keyCode).lower(),
+                                            False,
+                                            keyEvent.isKeyDown(VK_SHIFT),
+                                            keyEvent.isKeyDown(VK_MENU) and keyEvent.isKeyDown(VK_CONTROL) and keyEvent.isKeyDown(VK_SHIFT),
+                                            False)
             if ret is None:
-                print("cannot getKey:",keyEvent.charCode)
-                return False
+                self.setCommitString(self.compositionString+chr(keyEvent.keyCode))
+                self.setCompositionString("")
+                self.setShowCandidates(False)
+                return True
 
             self.setCompositionString(self.compositionString + ret)
             self.setCompositionCursor(len(self.compositionString))
 
-            candidates = imdict.predict(self.compositionString)
-            if len(candidates) > 0:
-                self.setCandidateList(candidates)
-                self.setShowCandidates(True)
+        candidates = self.imdict.predict(self.compositionString)
+        print("candidates:", candidates, "len:", len(candidates))
 
-            print("compositionString:",self.compositionString, "candidates:", candidates)
+        if len(candidates) == 1:
+            self.setCommitString(candidates[0])
+            self.setCompositionString("")
+            self.setShowCandidates(False)
+        elif len(candidates) > 0:
+            self.candidates = candidates
+            self.setCandidateList(candidates[:min(len(candidates), 9)])
+            self.setShowCandidates(True)
+        else:
+            self.setCommitString(self.compositionString)
+            self.setCompositionString("")
+            self.setShowCandidates(False)
 
         return True
 
