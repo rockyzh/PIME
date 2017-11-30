@@ -31,8 +31,8 @@ class TibetanTextService(TextService):
 
     compositionChar = ''
     tibetanKeymap = None
+    imdict = None
     
-
     def __init__(self, client):
         TextService.__init__(self, client)
         self.icon_dir = os.path.abspath(os.path.dirname(__file__))
@@ -40,6 +40,7 @@ class TibetanTextService(TextService):
     def onActivate(self):
         TextService.onActivate(self)
         self.tibetanKeymap = TibetKeyMap()
+        self.imdict = IMDict()
         self.customizeUI(candFontSize = 20, candPerRow = 1)
         self.setSelKeys("1234567890")
         # self.setSelKeys("asdfjkl;")
@@ -54,21 +55,10 @@ class TibetanTextService(TextService):
         return True
 
     def onKeyDown(self, keyEvent):
-        if not self.isComposing():
-            if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == VK_BACK:
-                return False
-
-        ret = self.tibetanKeymap.getKey(keyEvent.charCode)
-        if ret is None:
-            return False
-
-        self.setCommitString(""+ret)
-        self.setShowCandidates(False)
-        return True
-
-        candidates = ["喵", "描", "秒", "妙"]
         # handle candidate list
         if self.showCandidates:
+            print("showCandidates:",self.showCandidates)
+
             if keyEvent.keyCode == VK_UP or keyEvent.keyCode == VK_ESCAPE:
                 self.setShowCandidates(False)
             elif keyEvent.keyCode >= ord('1') and keyEvent.keyCode <= ord('4'):
@@ -104,8 +94,21 @@ class TibetanTextService(TextService):
             if i <= len(self.compositionString):
                 self.setCompositionCursor(i)
         else:
-            self.setCompositionString(self.compositionString + "喵")
+            ret = self.tibetanKeymap.getKey(keyEvent.charCode)
+            if ret is None:
+                print("cannot getKey:",keyEvent.charCode)
+                return False
+
+            self.setCompositionString(self.compositionString + ret)
             self.setCompositionCursor(len(self.compositionString))
+
+            candidates = imdict.predict(self.compositionString)
+            if len(candidates) > 0:
+                self.setCandidateList(candidates)
+                self.setShowCandidates(True)
+
+            print("compositionString:",self.compositionString, "candidates:", candidates)
+
         return True
 
     def onCommand(self, commandId, commandType):

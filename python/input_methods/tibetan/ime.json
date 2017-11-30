@@ -9,6 +9,5 @@
     "moduleName": "tibetan_ime",
     "serviceName": "TibetanTextService",
     "configTool": "..\\..\\python3\\pythonw.exe",
-    "configToolParams": "configtool.py config tibetan",
-    "configToolDir": "..\\..\\tinbase"
+    "configToolParams": "configtool.py config tibetan"
 }
