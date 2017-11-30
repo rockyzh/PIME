@@ -31,6 +31,7 @@ class TibetanTextService(TextService):
 
     compositionChar = ''
     tibetanKeymap = None
+    
 
     def __init__(self, client):
         TextService.__init__(self, client)
@@ -53,6 +54,10 @@ class TibetanTextService(TextService):
         return True
 
     def onKeyDown(self, keyEvent):
+        if not self.isComposing():
+            if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == VK_BACK:
+                return False
+
         ret = self.tibetanKeymap.getKey(keyEvent.charCode)
         if ret is None:
             return False
