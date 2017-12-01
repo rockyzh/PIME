@@ -152,10 +152,9 @@ class TibetanTextService(TextService):
             if chr(keyEvent.keyCode).lower() == 'm':
                 if self.mState is not None:
                     self.mState = None
-                    return true
                 else:
                     self.mState = MSTATE_CAPITAL_M if keyEvent.isKeyDown(VK_SHIFT) else MSTATE_M
-                    return true
+                return True
 
             ret = self.tibetanKeymap.getKey(chr(keyEvent.keyCode).lower(),
                                             self.mState == MSTATE_M,
