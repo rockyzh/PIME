@@ -36,6 +36,10 @@ class TibetanTextService(TextService):
 
     langMode = None
 
+    candidatesPageSize = 10
+    candidatesPage = 0
+    candidateCursor = 0
+
     def __init__(self, client):
         TextService.__init__(self, client)
         self.icon_dir = os.path.abspath(os.path.dirname(__file__))
@@ -44,9 +48,8 @@ class TibetanTextService(TextService):
         TextService.onActivate(self)
         self.tibetanKeymap = TibetKeyMap()
         self.imdict = IMDict()
-        self.customizeUI(candFontSize=20, candPerRow=1)
+        self.customizeUI(candFontSize=20, candPerRow=10, candUseCursor=True)
         self.setSelKeys("1234567890")
-        # self.setSelKeys("asdfjkl;")
 
     def onDeactivate(self):
         TextService.onDeactivate(self)
@@ -55,9 +58,6 @@ class TibetanTextService(TextService):
     # return True，系統會呼叫 onKeyDown() 進一步處理這個按鍵
     # return False，表示我們不需要這個鍵，系統會原封不動把按鍵傳給應用程式
     def filterKeyDown(self, keyEvent):
-        # 紀錄最後一次按下的鍵和按下的時間，在 filterKeyUp() 中要用
-        self.lastKeyDownCode = keyEvent.keyCode
-
         # 使用者開始輸入，還沒送出前的編輯區內容稱 composition string
         # isComposing() 是 False，表示目前沒有正在編輯中文
         # 另外，若使用 "`" key 輸入特殊符號，可能會有編輯區是空的，但選字清單開啟，輸入法需要處理的情況
@@ -116,45 +116,78 @@ class TibetanTextService(TextService):
         # 其餘狀況一律不處理，原按鍵輸入直接送還給應用程式
         return False
 
+    def candidatesTurnPage(self, page):
+        print("candidate turn to page:", page)
+        self.setShowCandidates(True)
+        self.setCandidateList(self.candidates[page*self.candidatesPageSize : page*self.candidatesPageSize+self.candidatesPageSize])
+
+    def commitComposition(self, s):
+        self.setCommitString(s)
+        self.setCompositionString("")
+        self.setShowCandidates(False)
+        self.candidates = []
+        self.candidateCursor = 0
+
     def onKeyDown(self, keyEvent):
         print("keydown:", keyEvent.__dict__)
         print("showCandidates:", self.showCandidates)
         print("compositionString", self.compositionString)
 
         # handle candidate list
-        if self.showCandidates:
+        if self.showCandidates and len(self.candidates) > 0:
             if keyEvent.keyCode == VK_ESCAPE:
                 self.setShowCandidates(False)
-            elif keyEvent.keyCode >= ord('1') and keyEvent.keyCode <= ord('9'):
-                i = keyEvent.keyCode - ord('1')
-                if i >= len(self.candidates):
-                    return false
+                self.candidates = []
+                self.candidateCursor = 0
+            elif ord('0') <= keyEvent.keyCode <= ord('9'):
+                i = 9 if keyEvent.keyCode == ord('0') else keyEvent.keyCode - ord('1')
+                if i > min(self.candidatesPageSize-1, len(self.candidates)-1-int(self.candidateCursor/self.candidatesPageSize)*self.candidatesPageSize):
+                    return False
 
-                self.setCommitString(self.candidates[i])
-                self.setCompositionString("")
-                self.setShowCandidates(False)
+                self.commitComposition(self.candidates[i+int(self.candidateCursor/self.candidatesPageSize)*self.candidatesPageSize])
+                return True
+            elif keyEvent.keyCode == VK_LEFT:
+                if self.candidateCursor > 0 and self.candidateCursor % self.candidatesPageSize == 0:
+                    self.candidatesTurnPage(int((self.candidateCursor-1)/self.candidatesPageSize))
+                self.candidateCursor = self.candidateCursor-1 if self.candidateCursor > 0 else 0
+                self.setCandidateCursor(self.candidateCursor % self.candidatesPageSize)
+                return True
+            elif keyEvent.keyCode == VK_RIGHT:
+                if self.candidateCursor < len(self.candidates)-1 and self.candidateCursor % self.candidatesPageSize == self.candidatesPageSize-1:
+                    self.candidatesTurnPage(int((self.candidateCursor+1)/self.candidatesPageSize))
+                self.candidateCursor = (self.candidateCursor+1) if self.candidateCursor < len(self.candidates)-1 else len(self.candidates)-1
+                self.setCandidateCursor(self.candidateCursor % self.candidatesPageSize)
+                return True
+            elif keyEvent.keyCode == VK_UP:
+                if int(self.candidateCursor/self.candidatesPageSize) > 0:
+                    self.candidatesTurnPage(int(self.candidateCursor/self.candidatesPageSize)-1)
+                    self.candidateCursor = self.candidateCursor-self.candidatesPageSize
+                    self.setCandidateCursor(self.candidateCursor % self.candidatesPageSize)
+                return True
+            elif keyEvent.keyCode == VK_DOWN:
+                if int(self.candidateCursor/self.candidatesPageSize) < int((len(self.candidates)-1) / self.candidatesPageSize):
+                    self.candidatesTurnPage(int(self.candidateCursor/self.candidatesPageSize)+1)
+                    self.candidateCursor = min(len(self.candidates)-1, self.candidateCursor+self.candidatesPageSize) 
+                    self.setCandidateCursor(self.candidateCursor % self.candidatesPageSize)
                 return True
 
         # handle normal keyboard input
         if not self.isComposing():
             if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == VK_BACK:
                 return False
-        if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == ord(' '):
-            self.setCommitString(self.compositionString)
-            self.setCompositionString("")
-            self.setShowCandidates(False)
+        if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == VK_SPACE:
+            self.commitComposition(self.candidates[self.candidateCursor])
             return True
+
         elif keyEvent.keyCode == VK_BACK and self.compositionString != "":
             self.setCompositionString(self.compositionString[:-1])
-        elif not keyEvent.isChar():
+        elif not keyEvent.isPrintableChar():
             return True
         else:
             if chr(keyEvent.keyCode).lower() == 'm':
-                if self.mState is not None:
-                    self.mState = None
-                else:
+                if self.mState is None:
                     self.mState = MSTATE_CAPITAL_M if keyEvent.isKeyDown(VK_SHIFT) else MSTATE_M
-                return True
+                    return True
 
             ret = self.tibetanKeymap.getKey(chr(keyEvent.keyCode).lower(),
                                             self.mState == MSTATE_M,
@@ -162,9 +195,7 @@ class TibetanTextService(TextService):
                                             keyEvent.isKeyDown(VK_MENU) and keyEvent.isKeyDown(VK_CONTROL) and keyEvent.isKeyDown(VK_SHIFT),
                                             self.mState == MSTATE_M)
             if ret is None:
-                self.setCommitString(self.compositionString+chr(keyEvent.keyCode))
-                self.setCompositionString("")
-                self.setShowCandidates(False)
+                self.commitComposition(self.compositionString+chr(keyEvent.keyCode))
                 return True
 
             self.mState = None
@@ -173,20 +204,17 @@ class TibetanTextService(TextService):
             self.setCompositionCursor(len(self.compositionString))
 
         candidates = self.imdict.predict(self.compositionString)
-        print("candidates:", candidates, "len:", len(candidates))
+        print("candidates count:", len(candidates))
 
         if len(candidates) == 1:
-            self.setCommitString(candidates[0])
-            self.setCompositionString("")
-            self.setShowCandidates(False)
+            self.commitComposition(candidates[0])
         elif len(candidates) > 0:
             self.candidates = candidates
-            self.setCandidateList(candidates[:min(len(candidates), 9)])
+            self.setCandidateList(candidates[:min(len(candidates), self.candidatesPageSize)])
             self.setShowCandidates(True)
+            self.candidateCursor = 0
         else:
-            self.setCommitString(self.compositionString)
-            self.setCompositionString("")
-            self.setShowCandidates(False)
+            self.commitComposition(candidates[0])
 
         return True
 
