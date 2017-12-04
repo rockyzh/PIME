@@ -58,6 +58,7 @@ class TibetanTextService(TextService):
     # return True，系統會呼叫 onKeyDown() 進一步處理這個按鍵
     # return False，表示我們不需要這個鍵，系統會原封不動把按鍵傳給應用程式
     def filterKeyDown(self, keyEvent):
+        print("filterKeyDown:", keyEvent.__dict__)
         # 使用者開始輸入，還沒送出前的編輯區內容稱 composition string
         # isComposing() 是 False，表示目前沒有正在編輯中文
         # 另外，若使用 "`" key 輸入特殊符號，可能會有編輯區是空的，但選字清單開啟，輸入法需要處理的情況
@@ -96,6 +97,8 @@ class TibetanTextService(TextService):
         if self.langMode == ENGLISH_MODE:
             return False
         # --------------   以下皆為中文模式   --------------
+
+        print("filterKeyDown:", keyEvent.isKeyToggled(VK_CAPITAL), keyEvent.isChar(), chr(keyEvent.charCode).isalpha(), keyEvent.isPrintableChar())
 
         # 中文模式下開啟 Capslock，須切換成英文
         if keyEvent.isKeyToggled(VK_CAPITAL):
@@ -175,20 +178,28 @@ class TibetanTextService(TextService):
         if not self.isComposing():
             if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == VK_BACK:
                 return False
+
+            if chr(keyEvent.keyCode).lower() == 'm':
+                if self.mState is None:
+                    self.mState = MSTATE_CAPITAL_M if keyEvent.isKeyDown(VK_SHIFT) else MSTATE_M
+
+                    print("switch m state to:", self.mState)
+                    return True
+
         if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == VK_SPACE:
             self.commitComposition(self.candidates[self.candidateCursor])
             return True
 
         elif keyEvent.keyCode == VK_BACK and self.compositionString != "":
             self.setCompositionString(self.compositionString[:-1])
+            if len(self.compositionString) == 0:
+                self.setShowCandidates(False)
+                self.candidates = []
+                self.candidateCursor = 0
+                return True
         elif not keyEvent.isPrintableChar():
             return True
         else:
-            if chr(keyEvent.keyCode).lower() == 'm':
-                if self.mState is None:
-                    self.mState = MSTATE_CAPITAL_M if keyEvent.isKeyDown(VK_SHIFT) else MSTATE_M
-                    return True
-
             ret = self.tibetanKeymap.getKey(chr(keyEvent.keyCode).lower(),
                                             self.mState == MSTATE_M,
                                             keyEvent.isKeyDown(VK_SHIFT),
@@ -214,7 +225,9 @@ class TibetanTextService(TextService):
             self.setShowCandidates(True)
             self.candidateCursor = 0
         else:
-            self.commitComposition(candidates[0])
+            #ignore incorrect key
+            self.setCompositionString(self.compositionString[:-1])
+            self.setCompositionCursor(len(self.compositionString))
 
         return True
 
