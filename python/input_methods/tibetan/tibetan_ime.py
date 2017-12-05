@@ -18,6 +18,7 @@ from textService import *
 import io
 import os.path
 import copy
+import math
 
 from .trie import *
 
@@ -37,8 +38,7 @@ class TibetanTextService(TextService):
     langMode = None
 
     candidatesPageSize = 10
-    candidatesPage = 0
-    candidateCursor = 0
+    candidateCurPage = 0
 
     def __init__(self, client):
         TextService.__init__(self, client)
@@ -74,7 +74,7 @@ class TibetanTextService(TextService):
         # 如果按下 Ctrl 鍵
         if keyEvent.isKeyDown(VK_CONTROL):
             # 開啟 Ctrl 快速輸入符號，輸入法需要此按鍵
-            if keyEvent.isPrintableChar() and self.langMode == CHINESE_MODE:
+            if keyEvent.isPrintableChar() and self.langMode == TIBETAN_MODE:
                 return True
             else: # 否則可能是應用程式熱鍵，輸入法不做處理
                 return False
@@ -82,7 +82,7 @@ class TibetanTextService(TextService):
         # 若按下 Shift 鍵
         if keyEvent.isKeyDown(VK_SHIFT):
             # 若開啟 Shift 快速輸入符號，輸入法需要此按鍵
-            if keyEvent.isPrintableChar() and self.langMode == CHINESE_MODE:
+            if keyEvent.isPrintableChar() and self.langMode == TIBETAN_MODE:
                 return True
 
         # 不論中英文模式，NumPad 都允許直接輸入數字，輸入法不處理
@@ -122,7 +122,11 @@ class TibetanTextService(TextService):
     def candidatesTurnPage(self, page):
         print("candidate turn to page:", page)
         self.setShowCandidates(True)
+        self.candidateCurPage = page
         self.setCandidateList(self.candidates[page*self.candidatesPageSize : page*self.candidatesPageSize+self.candidatesPageSize])
+    
+    def candidatesPageCount(self):
+        return math.ceil(len(self.candidates)/self.candidatesPageSize)
 
     def commitComposition(self, s):
         self.setCommitString(s)
@@ -135,6 +139,7 @@ class TibetanTextService(TextService):
         print("keydown:", keyEvent.__dict__)
         print("showCandidates:", self.showCandidates)
         print("compositionString", self.compositionString)
+        print("candidateCursor", self.candidateCursor)
 
         # handle candidate list
         if self.showCandidates and len(self.candidates) > 0:
@@ -144,34 +149,39 @@ class TibetanTextService(TextService):
                 self.candidateCursor = 0
             elif ord('0') <= keyEvent.keyCode <= ord('9'):
                 i = 9 if keyEvent.keyCode == ord('0') else keyEvent.keyCode - ord('1')
-                if i > min(self.candidatesPageSize-1, len(self.candidates)-1-int(self.candidateCursor/self.candidatesPageSize)*self.candidatesPageSize):
+                if self.candidateCurPage == self.candidatesPageCount()-1 and i >= (len(self.candidates) % self.candidatesPageSize):
                     return False
 
-                self.commitComposition(self.candidates[i+int(self.candidateCursor/self.candidatesPageSize)*self.candidatesPageSize])
+                print("selected index", i+self.candidateCurPage*self.candidatesPageSize)
+                self.commitComposition(self.candidates[i+self.candidateCurPage*self.candidatesPageSize])
                 return True
             elif keyEvent.keyCode == VK_LEFT:
-                if self.candidateCursor > 0 and self.candidateCursor % self.candidatesPageSize == 0:
-                    self.candidatesTurnPage(int((self.candidateCursor-1)/self.candidatesPageSize))
-                self.candidateCursor = self.candidateCursor-1 if self.candidateCursor > 0 else 0
-                self.setCandidateCursor(self.candidateCursor % self.candidatesPageSize)
+                if self.candidateCursor == 0:
+                    if self.candidateCurPage > 0:
+                        self.candidatesTurnPage(self.candidateCurPage-1)
+                        self.setCandidateCursor(self.candidatesPageSize-1)
+                else:
+                    self.setCandidateCursor(self.candidateCursor-1)
                 return True
             elif keyEvent.keyCode == VK_RIGHT:
-                if self.candidateCursor < len(self.candidates)-1 and self.candidateCursor % self.candidatesPageSize == self.candidatesPageSize-1:
-                    self.candidatesTurnPage(int((self.candidateCursor+1)/self.candidatesPageSize))
-                self.candidateCursor = (self.candidateCursor+1) if self.candidateCursor < len(self.candidates)-1 else len(self.candidates)-1
-                self.setCandidateCursor(self.candidateCursor % self.candidatesPageSize)
+                if self.candidateCurPage == self.candidatesPageCount()-1:
+                    if self.candidateCursor < (len(self.candidates) % self.candidatesPageSize) - 1:
+                        self.setCandidateCursor(self.candidateCursor+1)
+                if self.candidateCursor == self.candidatesPageSize-1:
+                    self.candidatesTurnPage(self.candidateCurPage+1)
+                    self.setCandidateCursor(0)
+                else:
+                    self.setCandidateCursor(self.candidateCursor+1)
                 return True
             elif keyEvent.keyCode == VK_UP:
-                if int(self.candidateCursor/self.candidatesPageSize) > 0:
-                    self.candidatesTurnPage(int(self.candidateCursor/self.candidatesPageSize)-1)
-                    self.candidateCursor = self.candidateCursor-self.candidatesPageSize
-                    self.setCandidateCursor(self.candidateCursor % self.candidatesPageSize)
+                if self.candidateCurPage > 0:
+                    self.candidatesTurnPage(self.candidateCurPage-1)
+                    self.setCandidateCursor(self.candidateCursor)
                 return True
             elif keyEvent.keyCode == VK_DOWN:
-                if int(self.candidateCursor/self.candidatesPageSize) < int((len(self.candidates)-1) / self.candidatesPageSize):
-                    self.candidatesTurnPage(int(self.candidateCursor/self.candidatesPageSize)+1)
-                    self.candidateCursor = min(len(self.candidates)-1, self.candidateCursor+self.candidatesPageSize) 
-                    self.setCandidateCursor(self.candidateCursor % self.candidatesPageSize)
+                if self.candidateCurPage < self.candidatesPageCount()-1:
+                    self.candidatesTurnPage(self.candidateCurPage+1)
+                    self.setCandidateCursor(min(self.candidateCursor, (len(self.candidates) % self.candidatesPageSize) - 1) if self.candidateCurPage == self.candidatesPageCount()-1 else self.candidateCursor)
                 return True
 
         # handle normal keyboard input
@@ -187,7 +197,7 @@ class TibetanTextService(TextService):
                     return True
 
         if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == VK_SPACE:
-            self.commitComposition(self.candidates[self.candidateCursor])
+            self.commitComposition(self.candidates[self.candidateCursor+self.candidateCurPage*self.candidatesPageSize])
             return True
 
         elif keyEvent.keyCode == VK_BACK and self.compositionString != "":
