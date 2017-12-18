@@ -73,11 +73,13 @@ class TibetanTextService(TextService):
 
         # 如果按下 Ctrl 鍵
         if keyEvent.isKeyDown(VK_CONTROL):
+            print("filterKeyDown control is down, returns false")
+            return False
             # 開啟 Ctrl 快速輸入符號，輸入法需要此按鍵
-            if keyEvent.isPrintableChar() and self.langMode == TIBETAN_MODE:
-                return True
-            else: # 否則可能是應用程式熱鍵，輸入法不做處理
-                return False
+            #if keyEvent.isPrintableChar() and self.langMode == TIBETAN_MODE:
+            #    return True
+            #else: # 否則可能是應用程式熱鍵，輸入法不做處理
+            #    return False
 
         # 若按下 Shift 鍵
         if keyEvent.isKeyDown(VK_SHIFT):
@@ -118,6 +120,19 @@ class TibetanTextService(TextService):
 
         # 其餘狀況一律不處理，原按鍵輸入直接送還給應用程式
         return False
+
+    def filterKeyUp(self, keyEvent):
+        if self.isComposing():
+            return True
+
+        if keyEvent.isKeyDown(VK_CONTROL):
+            print("filterKeyUp control is down, returns false")
+            return False
+
+        if keyEvent.isPrintableChar() and keyEvent.keyCode != VK_SPACE:
+            return True
+
+        return True
 
     def candidatesTurnPage(self, page):
         print("candidate turn to page:", page)
