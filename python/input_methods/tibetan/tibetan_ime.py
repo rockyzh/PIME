@@ -225,13 +225,13 @@ class TibetanTextService(TextService):
         elif not keyEvent.isPrintableChar():
             return True
         else:
-            ret = self.tibetanKeymap.getKey(chr(keyEvent.keyCode).lower(),
+            ret = self.tibetanKeymap.getKey(chr(keyEvent.charCode),
                                             self.mState == MSTATE_M,
                                             keyEvent.isKeyDown(VK_SHIFT),
                                             keyEvent.isKeyDown(VK_MENU) and keyEvent.isKeyDown(VK_CONTROL) and keyEvent.isKeyDown(VK_SHIFT),
                                             self.mState == MSTATE_M)
             if ret is None:
-                self.commitComposition(self.compositionString+chr(keyEvent.keyCode))
+                self.commitComposition(self.compositionString+chr(keyEvent.charCode))
                 return True
 
             self.mState = None
