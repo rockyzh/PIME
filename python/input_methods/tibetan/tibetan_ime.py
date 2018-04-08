@@ -162,6 +162,7 @@ class TibetanTextService(TextService):
                 self.setShowCandidates(False)
                 self.candidates = []
                 self.candidateCursor = 0
+                return True
             elif ord('0') <= keyEvent.keyCode <= ord('9'):
                 i = 9 if keyEvent.keyCode == ord('0') else keyEvent.keyCode - ord('1')
                 if self.candidateCurPage == self.candidatesPageCount()-1 and i >= (len(self.candidates) % self.candidatesPageSize):
@@ -212,7 +213,8 @@ class TibetanTextService(TextService):
                     return True
 
         if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == VK_SPACE:
-            self.commitComposition(self.candidates[self.candidateCursor+self.candidateCurPage*self.candidatesPageSize])
+            if len(self.candidates) > self.candidateCursor+self.candidateCurPage*self.candidatesPageSize:
+                self.commitComposition(self.candidates[self.candidateCursor+self.candidateCurPage*self.candidatesPageSize])
             return True
 
         elif keyEvent.keyCode == VK_BACK and self.compositionString != "":
@@ -222,6 +224,11 @@ class TibetanTextService(TextService):
                 self.candidates = []
                 self.candidateCursor = 0
                 return True
+
+        elif keyEvent.keyCode == VK_ESCAPE and len(self.compositionString) > 0:
+            self.commitComposition("")
+            return True
+
         elif not keyEvent.isPrintableChar():
             return True
         else:
@@ -242,17 +249,19 @@ class TibetanTextService(TextService):
         candidates = self.imdict.predict(self.compositionString)
         print("candidates count:", len(candidates))
 
-        if len(candidates) == 1:
-            self.commitComposition(candidates[0])
-        elif len(candidates) > 0:
+        #if len(candidates) == 1:
+        #    self.commitComposition(candidates[0])
+        #    #pass
+        if len(candidates) > 0:
             self.candidates = candidates
             self.setCandidateList(candidates[:min(len(candidates), self.candidatesPageSize)])
             self.setShowCandidates(True)
             self.candidateCursor = 0
         else:
+            self.commitComposition(self.compositionString)
             #ignore incorrect key
-            self.setCompositionString(self.compositionString[:-1])
-            self.setCompositionCursor(len(self.compositionString))
+            #self.setCompositionString(self.compositionString[:-1])
+            #self.setCompositionCursor(len(self.compositionString))
 
         return True
 
