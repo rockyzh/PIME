@@ -215,7 +215,10 @@ class TibetanTextService(TextService):
         if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == VK_SPACE:
             if len(self.candidates) > self.candidateCursor+self.candidateCurPage*self.candidatesPageSize:
                 self.commitComposition(self.candidates[self.candidateCursor+self.candidateCurPage*self.candidatesPageSize])
-            return True
+                return True
+            elif len(self.compositionString) > 0:
+                self.setCompositionString(self.compositionString)
+                return True
 
         elif keyEvent.keyCode == VK_BACK and self.compositionString != "":
             self.setCompositionString(self.compositionString[:-1])
