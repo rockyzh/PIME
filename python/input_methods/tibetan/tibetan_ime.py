@@ -35,7 +35,7 @@ class TibetanTextService(TextService):
     candidates = []
     mState = None
 
-    langMode = None
+    langMode = TIBETAN_MODE
 
     candidatesPageSize = 10
     candidateCurPage = 0
@@ -58,7 +58,6 @@ class TibetanTextService(TextService):
     # return True，系統會呼叫 onKeyDown() 進一步處理這個按鍵
     # return False，表示我們不需要這個鍵，系統會原封不動把按鍵傳給應用程式
     def filterKeyDown(self, keyEvent):
-        print("filterKeyDown:", keyEvent.__dict__)
         # 使用者開始輸入，還沒送出前的編輯區內容稱 composition string
         # isComposing() 是 False，表示目前沒有正在編輯中文
         # 另外，若使用 "`" key 輸入特殊符號，可能會有編輯區是空的，但選字清單開啟，輸入法需要處理的情況
@@ -67,17 +66,25 @@ class TibetanTextService(TextService):
             return True
         # --------------   以下都是「沒有」正在輸入中文的狀況   --------------
 
+        if keyEvent.isKeyDown(VK_MENU) and keyEvent.isKeyDown(VK_SHIFT) and keyEvent.isKeyDown(VK_CONTROL):
+            return True
+
+        print("filterKeyDown: alt: ", keyEvent.isKeyDown(VK_MENU) or keyEvent.isKeyDown(VK_LMENU) or keyEvent.isKeyDown(VK_RMENU), " shift: ", keyEvent.isKeyDown(VK_SHIFT), "ctl: ", keyEvent.isKeyDown(VK_CONTROL), "key dict: ",  keyEvent.__dict__)
+
         # 如果按下 Alt，可能是應用程式熱鍵，輸入法不做處理
-        if keyEvent.isKeyDown(VK_MENU):
-            return False
+        # if keyEvent.isKeyDown(VK_MENU) and not (keyEvent.isKeyDown(VK_SHIFT) and keyEvent.isKeyDown(VK_CONTROL)):
+        #     print("filterKeyDown menu is down, returns false")
+        #     return False
 
         # 如果按下 Ctrl 鍵
-        if keyEvent.isKeyDown(VK_CONTROL):
+        # if keyEvent.isKeyDown(VK_CONTROL) and not (keyEvent.isKeyDown(VK_SHIFT) and keyEvent.isKeyDown(VK_MENU)):
+        #     print("filterKeyDown control is down, returns false")
+        #     return False
             # 開啟 Ctrl 快速輸入符號，輸入法需要此按鍵
-            if keyEvent.isPrintableChar() and self.langMode == TIBETAN_MODE:
-                return True
-            else: # 否則可能是應用程式熱鍵，輸入法不做處理
-                return False
+            #if keyEvent.isPrintableChar() and self.langMode == TIBETAN_MODE:
+            #    return True
+            #else: # 否則可能是應用程式熱鍵，輸入法不做處理
+            #    return False
 
         # 若按下 Shift 鍵
         if keyEvent.isKeyDown(VK_SHIFT):
@@ -119,12 +126,28 @@ class TibetanTextService(TextService):
         # 其餘狀況一律不處理，原按鍵輸入直接送還給應用程式
         return False
 
+    def filterKeyUp(self, keyEvent):
+        if self.isComposing():
+            return True
+
+        if (keyEvent.isKeyDown(VK_MENU) or keyEvent.isKeyDown(VK_LMENU) or keyEvent.isKeyDown(VK_RMENU)) and keyEvent.isKeyDown(VK_SHIFT) and keyEvent.isKeyDown(VK_CONTROL):
+            return True
+
+        # if keyEvent.isKeyDown(VK_CONTROL) and not (keyEvent.isKeyDown(VK_SHIFT) and keyEvent.isKeyDown(VK_MENU)):
+        #    print("filterKeyUp control is down, returns false")
+        #    return False
+
+        if keyEvent.isPrintableChar() and keyEvent.keyCode != VK_SPACE:
+            return True
+
+        return True
+
     def candidatesTurnPage(self, page):
         print("candidate turn to page:", page)
         self.setShowCandidates(True)
         self.candidateCurPage = page
         self.setCandidateList(self.candidates[page*self.candidatesPageSize : page*self.candidatesPageSize+self.candidatesPageSize])
-    
+
     def candidatesPageCount(self):
         return math.ceil(len(self.candidates)/self.candidatesPageSize)
 
@@ -136,7 +159,7 @@ class TibetanTextService(TextService):
         self.candidateCursor = 0
 
     def onKeyDown(self, keyEvent):
-        print("keydown:", keyEvent.__dict__)
+        print("keydown: alt: ", keyEvent.isKeyDown(VK_MENU), " shift: ", keyEvent.isKeyDown(VK_SHIFT), "ctl: ", keyEvent.isKeyDown(VK_CONTROL), "key dict: ",  keyEvent.__dict__)
         print("showCandidates:", self.showCandidates)
         print("compositionString", self.compositionString)
         print("candidateCursor", self.candidateCursor)
@@ -147,6 +170,7 @@ class TibetanTextService(TextService):
                 self.setShowCandidates(False)
                 self.candidates = []
                 self.candidateCursor = 0
+                return True
             elif ord('0') <= keyEvent.keyCode <= ord('9'):
                 i = 9 if keyEvent.keyCode == ord('0') else keyEvent.keyCode - ord('1')
                 if self.candidateCurPage == self.candidatesPageCount()-1 and i >= (len(self.candidates) % self.candidatesPageSize):
@@ -189,16 +213,20 @@ class TibetanTextService(TextService):
             if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == VK_BACK:
                 return False
 
-            if chr(keyEvent.keyCode).lower() == 'm':
-                if self.mState is None:
-                    self.mState = MSTATE_CAPITAL_M if keyEvent.isKeyDown(VK_SHIFT) else MSTATE_M
+        if chr(keyEvent.keyCode).lower() == 'm':
+            if self.mState is None:
+                self.mState = MSTATE_CAPITAL_M if keyEvent.isKeyDown(VK_SHIFT) else MSTATE_M
 
-                    print("switch m state to:", self.mState)
-                    return True
+                print("switch m state to:", self.mState)
+                return True
 
         if keyEvent.keyCode == VK_RETURN or keyEvent.keyCode == VK_SPACE:
-            self.commitComposition(self.candidates[self.candidateCursor+self.candidateCurPage*self.candidatesPageSize])
-            return True
+            if len(self.candidates) > self.candidateCursor+self.candidateCurPage*self.candidatesPageSize:
+                self.commitComposition(self.candidates[self.candidateCursor+self.candidateCurPage*self.candidatesPageSize])
+                return True
+            elif len(self.compositionString) > 0:
+                self.setCompositionString(self.compositionString)
+                return True
 
         elif keyEvent.keyCode == VK_BACK and self.compositionString != "":
             self.setCompositionString(self.compositionString[:-1])
@@ -207,16 +235,22 @@ class TibetanTextService(TextService):
                 self.candidates = []
                 self.candidateCursor = 0
                 return True
+
+        elif keyEvent.keyCode == VK_ESCAPE and len(self.compositionString) > 0:
+            self.commitComposition("")
+            return True
+
         elif not keyEvent.isPrintableChar():
             return True
         else:
-            ret = self.tibetanKeymap.getKey(chr(keyEvent.keyCode).lower(),
+            print("input: ", chr(keyEvent.charCode), "mState: ", self.mState == MSTATE_M, ", shift: ", keyEvent.isKeyDown(VK_SHIFT))
+            ret = self.tibetanKeymap.getKey(chr(keyEvent.charCode).lower(),
                                             self.mState == MSTATE_M,
                                             keyEvent.isKeyDown(VK_SHIFT),
-                                            keyEvent.isKeyDown(VK_MENU) and keyEvent.isKeyDown(VK_CONTROL) and keyEvent.isKeyDown(VK_SHIFT),
-                                            self.mState == MSTATE_M)
+                                            (keyEvent.isKeyDown(VK_MENU) or keyEvent.isKeyDown(VK_LMENU) or keyEvent.isKeyDown(VK_RMENU)) and keyEvent.isKeyDown(VK_CONTROL) and keyEvent.isKeyDown(VK_SHIFT),
+                                            self.mState == MSTATE_CAPITAL_M)
             if ret is None:
-                self.commitComposition(self.compositionString+chr(keyEvent.keyCode))
+                self.commitComposition(self.compositionString+chr(keyEvent.charCode))
                 return True
 
             self.mState = None
@@ -227,17 +261,19 @@ class TibetanTextService(TextService):
         candidates = self.imdict.predict(self.compositionString)
         print("candidates count:", len(candidates))
 
-        if len(candidates) == 1:
-            self.commitComposition(candidates[0])
-        elif len(candidates) > 0:
+        #if len(candidates) == 1:
+        #    self.commitComposition(candidates[0])
+        #    #pass
+        if len(candidates) > 0:
             self.candidates = candidates
             self.setCandidateList(candidates[:min(len(candidates), self.candidatesPageSize)])
             self.setShowCandidates(True)
             self.candidateCursor = 0
         else:
+            self.commitComposition(self.compositionString)
             #ignore incorrect key
-            self.setCompositionString(self.compositionString[:-1])
-            self.setCompositionCursor(len(self.compositionString))
+            #self.setCompositionString(self.compositionString[:-1])
+            #self.setCompositionCursor(len(self.compositionString))
 
         return True
 

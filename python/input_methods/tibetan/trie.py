@@ -177,10 +177,10 @@ class TibetKeyMap:
 
     # doc error 'a':u'\u0f71' in u'\u0fb0'
     keymap_shift = {
-    '`':u'\u0f01', '1':u'\u0f2a', '2':u'\u0f2b', '3':u'\u0f2c', '4':u'\u0f2d', '5':u'\u0f2e', '6':u'\u0f2f', '7':u'\u0f30', '8':u'\u0f31', '9':u'\u0f32', '0':u'\u0f33', '-':u'\u0f3c', '=':u'\u0f3d',
-    'q':u'\u0f15', 'w':u'\u0f16', 'e':u'\u0f17', 'r':u'\u0fbc', 't':u'\u0f4a', 'y':u'\u0fbb', 'u':u'\u0f18', 'i':u'\u0f19', 'o':u'\u0f1a', 'p':u'\u0f1b', '[':u'\u0f1c', ']':u'\u0f1d', '\\':u'\u0f1e',
-    'a':u'\u0f71', 's':u'\u0f1f', 'd':u'\u0f4c', 'f':u'\u0f3e', 'g':u'\u0f3f', 'h':u'\u0fcf', 'j':u'\u0f02', 'k':u'\u0f03', 'l':u'\u0f06', ';':u'\u0f07', '\'':u'\u0f38',
-    'z':u'\u0f34', 'x':u'\u0f65', 'c':u'\u0f69', 'v':u'\u0f87', 'b':u'\u0f86', 'n':u'\u0f4e', ',':u'\u0f4b', '.':u'\u0f3a', '/':u'\u0f3b',
+    '~':u'\u0f01', '!':u'\u0f2a', '@':u'\u0f2b', '#':u'\u0f2c', '$':u'\u0f2d', '%':u'\u0f2e', '^':u'\u0f2f', '&':u'\u0f30', '*':u'\u0f31', '(':u'\u0f32', ')':u'\u0f33', '_':u'\u0f3c', '+':u'\u0f3d',
+    'q':u'\u0f15', 'w':u'\u0f16', 'e':u'\u0f17', 'r':u'\u0fbc', 't':u'\u0f4a', 'y':u'\u0fbb', 'u':u'\u0f18', 'i':u'\u0f19', 'o':u'\u0f1a', 'p':u'\u0f1b', '{':u'\u0f1c', '}':u'\u0f1d', '|':u'\u0f1e',
+    'a':u'\u0f71', 's':u'\u0f1f', 'd':u'\u0f4c', 'f':u'\u0f3e', 'g':u'\u0f3f', 'h':u'\u0fcf', 'j':u'\u0f02', 'k':u'\u0f03', 'l':u'\u0f06', ':':u'\u0f07', '"':u'\u0f38',
+    'z':u'\u0f34', 'x':u'\u0f65', 'c':u'\u0f69', 'v':u'\u0f87', 'b':u'\u0f86', 'n':u'\u0f4e', '<':u'\u0f4b', '>':u'\u0f3a', '?':u'\u0f3b',
     }
 
     keymap_alt_ctrl_shift = {
@@ -250,8 +250,3 @@ if __name__ == '__main__':
 
     for w in outs:
          print(u"{}".format(w))
-
-
-
-
-
