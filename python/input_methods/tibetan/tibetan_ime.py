@@ -243,7 +243,11 @@ class TibetanTextService(TextService):
         elif not keyEvent.isPrintableChar():
             return True
         else:
-            print("input: ", chr(keyEvent.charCode), "mState: ", self.mState == MSTATE_M, ", shift: ", keyEvent.isKeyDown(VK_SHIFT))
+            print("input: ", chr(keyEvent.charCode),
+                    "mState: ", self.mState == MSTATE_M,
+                    ", shift: ", keyEvent.isKeyDown(VK_SHIFT),
+                    "acs: ", keyEvent.isKeyDown(VK_MENU) and keyEvent.isKeyDown(VK_CONTROL) and keyEvent.isKeyDown(VK_SHIFT),
+                    "Mshift:", self.mState == MSTATE_CAPITAL_M)
             ret = self.tibetanKeymap.getKey(chr(keyEvent.charCode).lower(),
                                             self.mState == MSTATE_M,
                                             keyEvent.isKeyDown(VK_SHIFT),

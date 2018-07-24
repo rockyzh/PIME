@@ -184,10 +184,10 @@ class TibetKeyMap:
     }
 
     keymap_alt_ctrl_shift = {
-    '`':u'\u0f00', '1':u'\u0f76', '2':u'\u0f77', '3':u'\u0f78', '4':u'\u0f79', '5':u'\u0f81', '6':u'\u0f09', '7':u'\u0f0a', '8':u'\u0f0f', '9':u'\u0f10', '0':u'\u0f12', '-':u'\u0f0c', '=':u'\u0f13',
-    'q':u'\u0f89', 'w':u'\u0f88', 'e':u'\u0fbe', 'r':u'\u0f6a', 't':u'\u0f9a', 'y':u'\u0fbf', 'u':u'\u0f75', 'i':u'\u0f73', 'o':u'\u0fc0', 'p':u'\u0fc1', '[':u'\u0fc2', ']':u'\u0fc3', '\\':u'\u0f5c',
-    'a':u'\u0fc4', 's':u'\u0fc5', 'd':u'\u0f9c', 'f':u'\u0f57', 'g':u'\u0fc6', 'h':u'\u0fc7', 'j':u'\u0fc8', 'k':u'\u0f43', 'l':u'\u0fc9', ';':u'\u0fca', '\'':u'\u0fcb',
-    'z':u'\u0fcc', 'x':u'\u0fb5', 'c':u'\u0fb9', 'v':u'\u0f36', 'b':u'\u0f82', 'n':u'\u0f9e', 'm':u'\u0f52', ',':u'\u0f9b', '.':u'\u0f8b', '/':u'\u0f8a',
+    '~':u'\u0f00', '!':u'\u0f76', '@':u'\u0f77', '#':u'\u0f78', '$':u'\u0f79', '%':u'\u0f81', '^':u'\u0f09', '&':u'\u0f0a', '*':u'\u0f0f', '(':u'\u0f10', ')':u'\u0f12', '_':u'\u0f0c', '+':u'\u0f13',
+    'q':u'\u0f89', 'w':u'\u0f88', 'e':u'\u0fbe', 'r':u'\u0f6a', 't':u'\u0f9a', 'y':u'\u0fbf', 'u':u'\u0f75', 'i':u'\u0f73', 'o':u'\u0fc0', 'p':u'\u0fc1', '{':u'\u0fc2', '}':u'\u0fc3', '|':u'\u0f5c',
+    'a':u'\u0fc4', 's':u'\u0fc5', 'd':u'\u0f9c', 'f':u'\u0f57', 'g':u'\u0fc6', 'h':u'\u0fc7', 'j':u'\u0fc8', 'k':u'\u0f43', 'l':u'\u0fc9', ':':u'\u0fca', '"':u'\u0fcb',
+    'z':u'\u0fcc', 'x':u'\u0fb5', 'c':u'\u0fb9', 'v':u'\u0f36', 'b':u'\u0f82', 'n':u'\u0f9e', 'm':u'\u0f52', '<':u'\u0f9b', '>':u'\u0f8b', '?':u'\u0f8a',
     }
 
     keymap_M_shift = {
@@ -203,14 +203,14 @@ class TibetKeyMap:
                 return self.keymap_m[inchar]
             else:
                 return None
-        if shift == True :
-            if inchar in self.keymap_shift:
-                return self.keymap_shift[inchar]
-            else:
-                return None
         if acs == True :
             if inchar in self.keymap_alt_ctrl_shift:
                 return self.keymap_alt_ctrl_shift[inchar]
+            else:
+                return None
+        if shift == True :
+            if inchar in self.keymap_shift:
+                return self.keymap_shift[inchar]
             else:
                 return None
         if Mshift == True :
