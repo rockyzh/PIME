@@ -30,8 +30,8 @@ MSTATE_CAPITAL_M = 2
 
 class TibetanTextService(TextService):
     compositionChar = ''
-    tibetanKeymap = None
-    imdict = None
+    tibetanKeymap = TibetKeyMap()
+    imdict = IMDict()
     candidates = []
     mState = None
 
@@ -44,14 +44,55 @@ class TibetanTextService(TextService):
         TextService.__init__(self, client)
         self.icon_dir = os.path.abspath(os.path.dirname(__file__))
 
+    def char2VK(self, ch):
+        keycodeVKMap = {
+            '~': VK_OEM_3,
+            '_': VK_OEM_MINUS,
+            '+': VK_OEM_PLUS,
+            '{': VK_OEM_4,
+            '}': VK_OEM_6,
+            '|': VK_OEM_5,
+            ':': VK_OEM_1,
+            '"': VK_OEM_7,
+            '<': VK_OEM_COMMA,
+            '>': VK_OEM_PERIOD,
+            '?': VK_OEM_2
+        }
+
+        if ch in keycodeVKMap:
+            return keycodeVKMap[ch]
+        else:
+            return ord(ch)
+
     def onActivate(self):
         TextService.onActivate(self)
-        self.tibetanKeymap = TibetKeyMap()
-        self.imdict = IMDict()
         self.customizeUI(candFontSize=20, candPerRow=10, candUseCursor=True)
         self.setSelKeys("1234567890")
 
+        if self.tibetanKeymap:
+            for ch in self.tibetanKeymap.keymap_alt_ctrl_shift.keys():
+                self.addPreservedKey(self.char2VK(ch), TF_MOD_SHIFT|TF_MOD_CONTROL|TF_MOD_ALT, "{{f1dae0fb-8091-44a7-8a0c-3082a15154{:02x}}}".format(ord(ch)));
+
+    def onPreservedKey(self, guid):
+        # some preserved keys registered are pressed
+        if len(guid) != 38:
+            print("unknown char onPreservedKey: ", guid)
+            return
+
+        ch = int(guid[35:37], 16)
+        print("onPreservedKey: ", chr(ch))
+        return self.onKeyDown(KeyEvent({"charCode": ch, 
+            "keyCode": ch, 
+            "repeatCount": 1, 
+            "scanCode": 0, 
+            "isExtended": False, 
+            "keyStates": {VK_MENU: 1 << 7, VK_CONTROL: 1 << 7, VK_SHIFT: 1 << 7}}))
+
     def onDeactivate(self):
+        if self.tibetanKeymap:
+            for ch in self.tibetanKeymap.keymap_alt_ctrl_shift.keys():
+                self.removePreservedKey(self.char2VK(ch), TF_MOD_SHIFT|TF_MOD_CONTROL|TF_MOD_ALT, "{{f1dae0fb-8091-44a7-8a0c-3082a15154{:02x}}}".format(ord(ch)));
+
         TextService.onDeactivate(self)
 
     # 使用者按下按鍵，在 app 收到前先過濾那些鍵是輸入法需要的。
@@ -248,7 +289,7 @@ class TibetanTextService(TextService):
                     ", shift: ", keyEvent.isKeyDown(VK_SHIFT),
                     "acs: ", keyEvent.isKeyDown(VK_MENU) and keyEvent.isKeyDown(VK_CONTROL) and keyEvent.isKeyDown(VK_SHIFT),
                     "Mshift:", self.mState == MSTATE_CAPITAL_M)
-            ret = self.tibetanKeymap.getKey(chr(keyEvent.charCode).lower(),
+            ret = self.tibetanKeymap.getKey(chr(keyEvent.charCode),
                                             self.mState == MSTATE_M,
                                             keyEvent.isKeyDown(VK_SHIFT),
                                             (keyEvent.isKeyDown(VK_MENU) or keyEvent.isKeyDown(VK_LMENU) or keyEvent.isKeyDown(VK_RMENU)) and keyEvent.isKeyDown(VK_CONTROL) and keyEvent.isKeyDown(VK_SHIFT),

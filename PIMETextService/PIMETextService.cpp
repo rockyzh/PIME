@@ -127,13 +127,12 @@ bool TextService::onKeyUp(Ime::KeyEvent& keyEvent, Ime::EditSession* session) {
 }
 
 // virtual
-bool TextService::onPreservedKey(const GUID& guid) {
+bool TextService::onPreservedKey(const GUID& guid, Ime::EditSession* session) {
 	if(!client_)
 		return false;
 	// some preserved keys registered in ctor are pressed
-	return client_->onPreservedKey(guid);
+	return client_->onPreservedKey(guid, session);
 }
-
 
 // virtual
 bool TextService::onCommand(UINT id, CommandType type) {

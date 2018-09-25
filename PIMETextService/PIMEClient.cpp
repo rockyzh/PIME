@@ -427,7 +427,7 @@ bool Client::onKeyUp(Ime::KeyEvent& keyEvent, Ime::EditSession* session) {
 	return false;
 }
 
-bool Client::onPreservedKey(const GUID& guid) {
+bool Client::onPreservedKey(const GUID& guid, Ime::EditSession* session) {
 	LPOLESTR str = NULL;
 	if (SUCCEEDED(::StringFromCLSID(guid, &str))) {
 		Json::Value req;
@@ -437,7 +437,7 @@ bool Client::onPreservedKey(const GUID& guid) {
 
 		Json::Value ret;
 		sendRequest(req, ret);
-		if (handleReply(ret)) {
+		if (handleReply(ret, session)) {
 			return ret["return"].asBool();
 		}
 	}

@@ -49,7 +49,7 @@ public:
 	virtual bool filterKeyUp(Ime::KeyEvent& keyEvent);
 	virtual bool onKeyUp(Ime::KeyEvent& keyEvent, Ime::EditSession* session);
 
-	virtual bool onPreservedKey(const GUID& guid);
+	virtual bool onPreservedKey(const GUID& guid, Ime::EditSession* session);
 
 	virtual bool onCommand(UINT id, CommandType type);
 

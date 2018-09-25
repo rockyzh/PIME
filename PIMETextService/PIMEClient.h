@@ -55,7 +55,7 @@ public:
 	bool filterKeyUp(Ime::KeyEvent& keyEvent);
 	bool onKeyUp(Ime::KeyEvent& keyEvent, Ime::EditSession* session);
 
-	bool onPreservedKey(const GUID& guid);
+	bool onPreservedKey(const GUID& guid, Ime::EditSession* session);
 
 	bool onCommand(UINT id, Ime::TextService::CommandType type);
 

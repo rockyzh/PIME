@@ -178,16 +178,16 @@ class TibetKeyMap:
     # doc error 'a':u'\u0f71' in u'\u0fb0'
     keymap_shift = {
     '~':u'\u0f01', '!':u'\u0f2a', '@':u'\u0f2b', '#':u'\u0f2c', '$':u'\u0f2d', '%':u'\u0f2e', '^':u'\u0f2f', '&':u'\u0f30', '*':u'\u0f31', '(':u'\u0f32', ')':u'\u0f33', '_':u'\u0f3c', '+':u'\u0f3d',
-    'q':u'\u0f15', 'w':u'\u0f16', 'e':u'\u0f17', 'r':u'\u0fbc', 't':u'\u0f4a', 'y':u'\u0fbb', 'u':u'\u0f18', 'i':u'\u0f19', 'o':u'\u0f1a', 'p':u'\u0f1b', '{':u'\u0f1c', '}':u'\u0f1d', '|':u'\u0f1e',
-    'a':u'\u0f71', 's':u'\u0f1f', 'd':u'\u0f4c', 'f':u'\u0f3e', 'g':u'\u0f3f', 'h':u'\u0fcf', 'j':u'\u0f02', 'k':u'\u0f03', 'l':u'\u0f06', ':':u'\u0f07', '"':u'\u0f38',
-    'z':u'\u0f34', 'x':u'\u0f65', 'c':u'\u0f69', 'v':u'\u0f87', 'b':u'\u0f86', 'n':u'\u0f4e', '<':u'\u0f4b', '>':u'\u0f3a', '?':u'\u0f3b',
+    'Q':u'\u0f15', 'W':u'\u0f16', 'E':u'\u0f17', 'R':u'\u0fbc', 'T':u'\u0f4a', 'Y':u'\u0fbb', 'U':u'\u0f18', 'I':u'\u0f19', 'O':u'\u0f1a', 'P':u'\u0f1b', '{':u'\u0f1c', '}':u'\u0f1d', '|':u'\u0f1e',
+    'A':u'\u0f71', 'S':u'\u0f1f', 'D':u'\u0f4c', 'F':u'\u0f3e', 'G':u'\u0f3f', 'H':u'\u0fcf', 'J':u'\u0f02', 'K':u'\u0f03', 'L':u'\u0f06', ':':u'\u0f07', '"':u'\u0f38',
+    'Z':u'\u0f34', 'X':u'\u0f65', 'C':u'\u0f69', 'V':u'\u0f87', 'B':u'\u0f86', 'N':u'\u0f4e', '<':u'\u0f4b', '>':u'\u0f3a', '?':u'\u0f3b',
     }
 
     keymap_alt_ctrl_shift = {
-    '~':u'\u0f00', '!':u'\u0f76', '@':u'\u0f77', '#':u'\u0f78', '$':u'\u0f79', '%':u'\u0f81', '^':u'\u0f09', '&':u'\u0f0a', '*':u'\u0f0f', '(':u'\u0f10', ')':u'\u0f12', '_':u'\u0f0c', '+':u'\u0f13',
-    'q':u'\u0f89', 'w':u'\u0f88', 'e':u'\u0fbe', 'r':u'\u0f6a', 't':u'\u0f9a', 'y':u'\u0fbf', 'u':u'\u0f75', 'i':u'\u0f73', 'o':u'\u0fc0', 'p':u'\u0fc1', '{':u'\u0fc2', '}':u'\u0fc3', '|':u'\u0f5c',
-    'a':u'\u0fc4', 's':u'\u0fc5', 'd':u'\u0f9c', 'f':u'\u0f57', 'g':u'\u0fc6', 'h':u'\u0fc7', 'j':u'\u0fc8', 'k':u'\u0f43', 'l':u'\u0fc9', ':':u'\u0fca', '"':u'\u0fcb',
-    'z':u'\u0fcc', 'x':u'\u0fb5', 'c':u'\u0fb9', 'v':u'\u0f36', 'b':u'\u0f82', 'n':u'\u0f9e', 'm':u'\u0f52', '<':u'\u0f9b', '>':u'\u0f8b', '?':u'\u0f8a',
+    '~':u'\u0f00', '1':u'\u0f76', '2':u'\u0f77', '3':u'\u0f78', '4':u'\u0f79', '5':u'\u0f81', '6':u'\u0f09', '7':u'\u0f0a', '8':u'\u0f0f', '9':u'\u0f10', '0':u'\u0f12', '_':u'\u0f0c', '+':u'\u0f13',
+    'Q':u'\u0f89', 'W':u'\u0f88', 'E':u'\u0fbe', 'R':u'\u0f6a', 'T':u'\u0f9a', 'Y':u'\u0fbf', 'U':u'\u0f75', 'I':u'\u0f73', 'O':u'\u0fc0', 'P':u'\u0fc1', '{':u'\u0fc2', '}':u'\u0fc3', '|':u'\u0f5c',
+    'A':u'\u0fc4', 'S':u'\u0fc5', 'D':u'\u0f9c', 'F':u'\u0f57', 'G':u'\u0fc6', 'H':u'\u0fc7', 'J':u'\u0fc8', 'K':u'\u0f43', 'L':u'\u0fc9', ':':u'\u0fca', '"':u'\u0fcb',
+    'Z':u'\u0fcc', 'X':u'\u0fb5', 'C':u'\u0fb9', 'V':u'\u0f36', 'B':u'\u0f82', 'N':u'\u0f9e', 'M':u'\u0f52', '<':u'\u0f9b', '>':u'\u0f8b', '?':u'\u0f8a',
     }
 
     keymap_M_shift = {
